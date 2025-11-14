@@ -1,17 +1,22 @@
 /* testhash.c: tests the hash table functions */
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "pf.h"
+#include "pftypes.h"
 
-main()
+int main()
 {
-int i,k;
+int i;
+PFbpage* k;
 long j;
 
 	PFhashInit();
 	/* insert a few entries */
 	for (i=1; i < 11; i++)
 		for (j=1; j < 11; j ++){
-			if (PFhashInsert(i,j,i+j) != PFE_OK){
+			//FIX THIS - this looks terrible
+			if (PFhashInsert(i,j,(PFbpage *)(uintptr_t)(i+j)) != PFE_OK){
 				printf("PFhashInsert failed\n");
 				exit(1);
 			}
@@ -22,7 +27,7 @@ long j;
 		for (j=1; j < 11; j++){
 			k = PFhashFind(i,j);
 			if (k == NULL){
-				printf("PFfind failed at %d %d\n",i,j);
+				printf("PFfind failed at %d %ld\n",i,j);
 				exit(1);
 			}
 			else
@@ -33,7 +38,7 @@ long j;
 	for (j =10; j > 0; j--)
 		for (i=10; i > 0; i--)
 			if (PFhashDelete(i,j) != PFE_OK){
-				printf("PFhashDelete failed at %d %d",i,j);
+				printf("PFhashDelete failed at %d %ld",i,j);
 				exit(1);
 			}
 

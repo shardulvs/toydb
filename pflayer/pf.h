@@ -1,4 +1,6 @@
 /* pf.h: externs and error codes for Paged File Interface*/
+#pragma once
+
 #ifndef TRUE
 #define TRUE 1		
 #endif
@@ -36,5 +38,5 @@
 
 /* externs from the PF layer */
 extern int PFerrno;		/* error number of last error */
-extern void PF_Init();
-extern void PF_PrintError();
+void PF_Init();
+void PF_PrintError();

@@ -1,4 +1,6 @@
 /* pftypes.h: declarations for Paged File interface */
+#pragma once
+#include "pf.h"
 
 /**************************** File Page Decls *********************/
 /* Each file contains a header, which is a integer pointing
@@ -42,7 +44,7 @@ typedef struct PFbpage {
 					buffer page */
 	struct PFbpage *prevpage;	/* previous in the linked list
 					of buffer pages */
-	short	dirty:1,		/* TRUE if page is dirty */
+	unsigned short	dirty:1,		/* TRUE if page is dirty */
 		fixed:1;		/* TRUE if page is fixed in buffer*/
 	int	page;			/* page number of this page */
 	int	fd;			/* file desciptor of this page */
@@ -67,14 +69,52 @@ typedef struct PFhash_entry {
 #define PFhash(fd,page) (((fd)+(page)) % PF_HASH_TBL_SIZE)
 
 /******************* Interface functions from Hash Table ****************/
-extern void PFhashInit();
-extern PFbpage *PFhashFind();
-extern PFhashInsert();
-extern PFhashDelete();
-extern PFhashPrint();
+void PFhashInit();
+PFbpage *PFhashFind();
+int PFhashInsert();
+int PFhashDelete();
+void PFhashPrint();
 
 /****************** Interface functions from Buffer Manager *************/
-extern PFbufGet();
-extern PFbufUnfix();
-extern PFbufalloc();
-extern PFbufReleaseFile();
+// int PFbufGet();
+int PFbufUnfix(int fd,      /* file descriptor */
+               int pagenum, /* page number */
+               int dirty    /* TRUE if page is dirty */
+);
+
+int PFbufUsed(int fd,     /* file descriptor */
+              int pagenum /* page number */
+);
+
+int PFbufAlloc(int fd,          /* file descriptor */
+               int pagenum,     /* page number */
+               PFfpage **fpage, /* pointer to file page */
+               int (*writefcn)(int, int, PFfpage*));
+
+int PFbufReleaseFile(
+    int fd,                              /* file descriptor */
+    int (*writefcn)(int, int, PFfpage *) /* function to write a page of file */
+);
+
+int PFbufGet(int fd,          /* file descriptor */
+             int pagenum,     /* page number */
+             PFfpage **fpage, /* pointer to pointer to file page */
+             int (*readfcn)(int, int, PFfpage *), /* function to read a page */
+             int (*writefcn)(int, int, PFfpage *) /* function to write a page */
+);
+
+/************ More declarations that the compiler needs to see **********/
+PFbpage *PFhashFind(int fd, int page);
+int PFhashInsert(int fd, int page, PFbpage* bpage);
+int PFhashDelete(int fd, int page);
+int PF_CreateFile(char* fname);
+int PF_OpenFile(char* fname);
+int PF_DisposePage(int fd, int pagenum);
+int PF_CloseFile(int fd);
+int	PF_DestroyFile(char* fname);
+int PF_AllocPage(int fd, int* pagenum, char** pagebuf);
+int PF_UnfixPage(int fd, int pagenum, int dirty);
+int PF_GetThisPage(int fd, int pagenum, char** pagebuf);
+void PFbufPrint();
+int PF_GetNextPage(int fd, int* pagenum, char** pagebuf);
+void PF_PrintError(char* s);
