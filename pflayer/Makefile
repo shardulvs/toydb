@@ -25,3 +25,6 @@ lint:
 
 install: pflayer.o 
 
+clean:
+	rm -f *.o testpf testhash file1 file2
+
