@@ -22,6 +22,7 @@ long j;
 			}
 		}
 
+	PFhashPrint();
 	/* Now, find all the entries */
 	for (i=1; i < 11; i++)
 		for (j=1; j < 11; j++){

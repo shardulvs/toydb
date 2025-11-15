@@ -39,4 +39,4 @@
 /* externs from the PF layer */
 extern int PFerrno;		/* error number of last error */
 void PF_Init();
-void PF_PrintError();
+void PF_PrintError(char* s);
