@@ -1,12 +1,12 @@
 #PUBLICDIR= /usr0/cs564/public/project
-SRC= buf.c hash.c pf.c
-OBJ= buf.o hash.o pf.o
+SRC = buf.c hash.c pf.c
+OBJ = buf.o hash.o pf.o
 HDR = pftypes.h pf.h 
 
 pflayer.o: $(OBJ)
 	ld -r -o pflayer.o $(OBJ)
 
-tests: testhash testpf
+tests: testhash testpf test_pf_experiments
 
 testpf: testpf.o pflayer.o
 	cc -o testpf testpf.o pflayer.o
@@ -14,11 +14,14 @@ testpf: testpf.o pflayer.o
 testhash: testhash.o pflayer.o
 	cc -o testhash testhash.o pflayer.o
 
+test_pf_experiments: test_pf_experiments.o pflayer.o
+	cc -o test_pf_experiments test_pf_experiments.o pflayer.o
+
 $(OBJ): $(HDR)
 
 testhash.o: $(HDR)
-
 testpf.o: $(HDR)
+test_pf_experiments.o: $(HDR)
 
 lint: 
 	lint $(SRC)
@@ -26,5 +29,4 @@ lint:
 install: pflayer.o 
 
 clean:
-	rm -f *.o testpf testhash file1 file2
-
+	rm -f *.o testpf testhash test_pf_experiments file1 file2 pf_auto_testfile.dat pf_results.csv

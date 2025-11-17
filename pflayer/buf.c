@@ -12,6 +12,28 @@ static PFbpage *PFfirstbpage= NULL;	/* ptr to first buffer page, or NULL */
 static PFbpage *PFlastbpage = NULL;	/* ptr to last buffer page, or NULL */
 static PFbpage *PFfreebpage= NULL;	/* list of free buffer pages */
 
+void PFbufInitPool(int poolSize)
+{
+    /* Reset static vars inside buf.c */
+    PFnumbpage = 0;
+    PFfirstbpage = NULL;
+    PFlastbpage = NULL;
+    PFfreebpage = NULL;
+
+    /* Create poolSize PFbpage nodes in the free list */
+    for (int i = 0; i < poolSize; i++) {
+        PFbpage *p = (PFbpage *) malloc(sizeof(PFbpage));
+
+        p->nextpage = PFfreebpage;
+        p->prevpage = NULL;
+        p->dirty = 0;
+        p->fixed = 0;
+        p->fd = -1;
+        p->page = -1;
+
+        PFfreebpage = p;
+    }
+}
 /****************************************************************************
 SPECIFICATIONS:
 	Insert the buffer page pointed by "bpage" into the free list.
@@ -117,7 +139,7 @@ GLOBAL VARIABLES MODIFIED:
 static int PFbufInternalAlloc(
     PFbpage **bpage, /* pointer to pointer to buffer bpage to be allocated*/
     int (*writefcn)(int, int, PFfpage *)) {
-  PFbpage *tbpage; /* temporary pointer to buffer page */
+  PFbpage *tbpage = NULL; /* temporary pointer to buffer page */
   int error;       /* error value returned*/
 
   /* Set *bpage to the buffer page to be returned */
@@ -142,10 +164,25 @@ static int PFbufInternalAlloc(
 
     *bpage = NULL; /* set initial return value */
 
-    for (tbpage = PFlastbpage; tbpage != NULL; tbpage = tbpage->prevpage) {
-      if (!tbpage->fixed)
-        /* found a page that can be swapped out */
-        break;
+    /* LRU = choose from tail (least-recently-used) */
+    if (PFbufferPool.replacement == PF_REPLACEMENT_LRU) {
+      for (tbpage = PFlastbpage; tbpage != NULL; tbpage = tbpage->prevpage) {
+        if (!tbpage->fixed)
+          break;
+      }
+    }
+
+    /* MRU = choose from head (most-recently-used) */
+    else {
+      for (tbpage = PFfirstbpage; tbpage != NULL; tbpage = tbpage->nextpage) {
+        if (!tbpage->fixed)
+          break;
+      }
+    }
+
+    if (tbpage == NULL) {
+      PFerrno = PFE_NOBUF;
+      return PFerrno;
     }
 
     if (tbpage == NULL) {
@@ -155,9 +192,12 @@ static int PFbufInternalAlloc(
     }
 
     /* write out the dirty page */
-    if (tbpage->dirty && ((error = (*writefcn)(tbpage->fd, tbpage->page,
-                                               &tbpage->fpage)) != PFE_OK))
-      return (error);
+    if (tbpage->dirty) {
+      PFbufferPool.physicalWrites++;
+      if ((error = (*writefcn)(tbpage->fd, tbpage->page, &tbpage->fpage)) !=
+          PFE_OK)
+        return (error);
+    }
     tbpage->dirty = FALSE;
 
     /* unlink from hash table */
@@ -173,6 +213,15 @@ static int PFbufInternalAlloc(
   /* Link the page as the head of the used list */
   PFbufLinkHead(*bpage);
   return (PFE_OK);
+}
+
+void PFbufLinkTail(PFbpage *p) {
+    p->nextpage = NULL;
+    p->prevpage = PFlastbpage;
+    if (PFlastbpage) PFlastbpage->nextpage = p;
+    PFlastbpage = p;
+    if (PFfirstbpage == NULL)
+        PFfirstbpage = p;
 }
 
 /************************* Interface to the Outside World ****************/
@@ -209,12 +258,13 @@ int PFbufGet(int fd,          /* file descriptor */
              int (*readfcn)(int, int, PFfpage *), /* function to read a page */
              int (*writefcn)(int, int, PFfpage *) /* function to write a page */
 ) {
+  PFbufferPool.logicalPageRequests++;
   PFbpage *bpage; /* pointer to buffer */
   int error;
 
   if ((bpage = PFhashFind(fd, pagenum)) == NULL) {
     /* page not in buffer. */
-
+    PFbufferPool.logicalPageHits++;
     /* allocate an empty page */
     if ((error = PFbufInternalAlloc(&bpage, writefcn)) != PFE_OK) {
       /* error */
@@ -224,10 +274,19 @@ int PFbufGet(int fd,          /* file descriptor */
 
     /* read the page */
     if ((error = (*readfcn)(fd, pagenum, &bpage->fpage)) != PFE_OK) {
+      PFbufferPool.physicalReads++;
       /* error reading the page. put buffer back into
       the free list, and return gracefully */
-      PFbufUnlink(bpage);
-      PFbufInsertFree(bpage);
+      /* If MRU policy: move to head as usual */
+      if (PFbufferPool.replacement == PF_REPLACEMENT_MRU) {
+        PFbufUnlink(bpage);
+        PFbufLinkHead(bpage);
+      }
+      /* If LRU: move to tail */
+      else {
+        PFbufUnlink(bpage);
+        PFbufLinkTail(bpage); // You must implement PFbufLinkTail()
+      }
       *fpage = NULL;
       return (error);
     }
@@ -336,6 +395,7 @@ int PFbufAlloc(int fd,          /* file descriptor */
   if ((error = PFbufInternalAlloc(&bpage, writefcn)) != PFE_OK)
     /* can't get any buffer */
     return (error);
+  PFbufferPool.pageAllocations++;
 
   /* put ourselves into the hash table */
   if ((error = PFhashInsert(fd, pagenum, bpage)) != PFE_OK) {
@@ -375,11 +435,17 @@ int PFbufReleaseFile(
       }
 
       /* write out dirty page */
-      if (bpage->dirty &&
-          ((error = (*writefcn)(fd, bpage->page, &bpage->fpage)) != PFE_OK))
-        /* error writing file */
-        return (error);
+      if (bpage->dirty)
+      {
+        PFbufferPool.physicalWrites++;
+        if((error = (*writefcn)(fd, bpage->page, &bpage->fpage)) != PFE_OK)
+        {
+          /* error writing file */
+          return (error);
+        }
+      }
       bpage->dirty = FALSE;
+      
 
       /* get rid of it from the hash table */
       if ((error = PFhashDelete(fd, bpage->page)) != PFE_OK) {

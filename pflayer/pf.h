@@ -40,3 +40,36 @@
 extern int PFerrno;		/* error number of last error */
 void PF_Init();
 void PF_PrintError(char* s);
+
+#define PF_REPLACEMENT_LRU 0
+#define PF_REPLACEMENT_MRU 1
+
+typedef struct PF_Frame {
+    int fileDesc;         /* which file this frame belongs to */
+    int pageNum;          /* page number or -1 if free */
+    char *data;           /* pointer to page data (PF_PAGE_SIZE) */
+    int dirty;            /* TRUE if modified */
+    int fixedCount;       /* number of pins */
+    struct PF_Frame *prev, *next; /* for LRU/MRU doubly linked list */
+} PF_Frame;
+
+
+typedef struct PF_BufferPool {
+    PF_Frame *frames; /* array of frames */
+    int poolSize;     /* number of frames */
+    int replacement;  /* PF_REPLACEMENT_LRU / PF_REPLACEMENT_MRU */
+    PF_Frame *lru_head; /* head = MRU or LRU depending on convention */
+    PF_Frame *lru_tail;
+    /* Hash map from (fileDesc,pageNum) -> frame index (use simple chaining or fixed hash) */
+    /* Stats */
+    unsigned long logicalPageRequests;
+    unsigned long logicalPageHits;
+    unsigned long physicalReads;
+    unsigned long physicalWrites;
+    unsigned long pageAllocations;
+} PF_BufferPool;
+
+void PF_InitWithOptions(int poolSize, int replacementPolicy);
+void PFbufInitPool(int poolSize);
+extern struct PF_BufferPool PFbufferPool;
+void PF_DumpStats();

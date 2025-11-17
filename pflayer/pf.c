@@ -27,6 +27,15 @@ sense that it's <0 or >= # of pages in the file */
 #define PFinvalidPagenum(fd,pagenum) ((pagenum)<0 || (pagenum) >= \
 				PFftab[fd].hdr.numpages)
 
+struct PF_BufferPool PFbufferPool;
+
+void PF_DumpStats() {
+    printf("PF Buffer Statistics:\n");
+    printf("  Logical requests   : %lu\n", PFbufferPool.logicalPageRequests);
+    printf("  Logical hits       : %lu\n", PFbufferPool.logicalPageHits);
+    printf("  Physical reads     : %lu\n", PFbufferPool.physicalReads);
+    printf("  Physical writes    : %lu\n", PFbufferPool.physicalWrites);
+}
 /****************** Internal Support Functions *****************************/
 /****************************************************************************
 SPECIFICATIONS:
@@ -185,6 +194,17 @@ void PF_Init() {
   }
 }
 
+void PF_InitWithOptions(int poolSize, int replacementPolicy) {
+    PFbufferPool.poolSize = poolSize;
+    PFbufferPool.replacement = replacementPolicy;
+    PFbufferPool.logicalPageRequests = 0;
+    PFbufferPool.logicalPageHits = 0;
+    PFbufferPool.physicalReads = 0;
+    PFbufferPool.physicalWrites = 0;
+
+    /* Tell buf.c to reinitialize its internal free lists */
+    PFbufInitPool(poolSize);
+}
 /****************************************************************************
 SPECIFICATIONS:
 	Create a paged file called "fname". The file should not have
