@@ -1,5 +1,10 @@
+# --- General build artifacts ---
 *.o
-pflayer/file1
-pflayer/file2
-pflayer/testpf
+*.out
+
+# PF layer page files (o1, o2, o3…)
+o[0-9]*
+
+# Test executables generated inside pflayer
 pflayer/testhash
+pflayer/testpf
