@@ -1,7 +1,6 @@
 # include "../pflayer/pftypes.h"
 # include <stdio.h>
 # include "am.h"
-# include "pf.h"
 # include <strings.h>
 
 /* The structure of the scan Table */

@@ -1,7 +1,6 @@
 # include <strings.h>
 # include "../pflayer/pftypes.h"
 # include "am.h"
-# include "pf.h"
 # include <string.h>
 
 /* searches for a key in a binary tree - returns FOUND or NOTFOUND and

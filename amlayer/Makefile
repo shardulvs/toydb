@@ -4,31 +4,32 @@ a.out : am.o amfns.o amsearch.o aminsert.o amstack.o amglobals.o ../pflayer/pfla
 amlayer.o : am.o amfns.o amsearch.o aminsert.o amstack.o amglobals.o amscan.o amprint.o
 	ld -r am.o amfns.o amsearch.o aminsert.o  amstack.o amglobals.o amscan.o amprint.o  -o amlayer.o
 
-am.o : am.c am.h pf.h
+am.o : am.c am.h ../pflayer/pf.h ../pflayer/pftypes.h
 	cc -c am.c
 
-amfns.o : amfns.c am.h pf.h
+amfns.o : amfns.c am.h ../pflayer/pf.h ../pflayer/pftypes.h
 	cc -c amfns.c
 
-amsearch.o : amsearch.c am.h pf.h
+amsearch.o : amsearch.c am.h ../pflayer/pf.h ../pflayer/pftypes.h
 	cc -c amsearch.c
 
-aminsert.o : aminsert.c am.h pf.h
+aminsert.o : aminsert.c am.h ../pflayer/pf.h ../pflayer/pftypes.h
 	cc -c aminsert.c
 
-amscan.o : amscan.c am.h pf.h
+amscan.o : amscan.c am.h ../pflayer/pf.h ../pflayer/pftypes.h
 	cc -c amscan.c
 
-amstack.o : amstack.c am.h pf.h
+amstack.o : amstack.c am.h ../pflayer/pf.h ../pflayer/pftypes.h
 	cc -c amstack.c
 
 amglobals.o : amglobals.c am.h
 	cc -c amglobals.c
 
-amprint.o : amprint.c am.h pf.h 
+amprint.o : amprint.c am.h ../pflayer/pf.h ../pflayer/pftypes.h 
 	cc -c amprint.c
 	
-main.o : main.c am.h pf.h 
+main.o : main.c am.h ../pflayer/pf.h ../pflayer/pftypes.h 
 	cc -c main.c
 
-
+clean:
+	rm -f *.o a.out o[0-9]*

@@ -1,6 +1,5 @@
 # include <stdio.h>
 # include "am.h"
-# include "pf.h"
 # include <strings.h>
 # include <stdlib.h>
 # include "../pflayer/pftypes.h"
@@ -174,7 +173,7 @@ switch(attrType)
    case 'c' : {
 	       bufstr = malloc((unsigned) (attrLength + 1));
                bcopy(bufPtr,bufstr,attrLength);
-               bufstr[attrLength] = '/0';
+               bufstr[attrLength] = '\0';
                printf("ATTRIBUTE is %s\n",bufstr);
                free(bufstr);
 	       break;
