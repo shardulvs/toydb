@@ -2,11 +2,13 @@
 #include <stdio.h>
 #include "am.h"
 #include "testam.h"
+#include "../pflayer/pf.h"
+#include "stdlib.h"
 
 #define MAXRECS	512	/* max # of records to insert */
 #define FNAME_LENGTH 80	/* file name size */
 
-main()
+int main()
 {
 int fd;	/* file descriptor for the index */
 char fname[FNAME_LENGTH];	/* file name */

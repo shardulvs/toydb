@@ -117,4 +117,7 @@ int PF_UnfixPage(int fd, int pagenum, int dirty);
 int PF_GetThisPage(int fd, int pagenum, char** pagebuf);
 void PFbufPrint();
 int PF_GetNextPage(int fd, int* pagenum, char** pagebuf);
-void PF_PrintError(char* s);
+int PF_GetFirstPage(int fd,        /* file descriptor */
+                    int *pagenum,  /* page number of first page */
+                    char **pagebuf /* pointer to the pointer to buffer */
+);

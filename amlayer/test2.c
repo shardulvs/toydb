@@ -3,12 +3,13 @@ splitting of pages of your B+ tree */
 #include <stdio.h>
 #include "am.h"
 #include "testam.h"
+#include "../pflayer/pf.h"
 
 #define STRING_SIZE 250	/* string */
 #define MAXRECS	100	/* max # of records to insert */
 #define FNAME_LENGTH 80	/* file name size */
 
-main()
+int main()
 {
 int fd;	/* file descriptor for the index */
 char fname[FNAME_LENGTH];	/* file name */

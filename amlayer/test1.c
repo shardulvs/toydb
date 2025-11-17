@@ -4,11 +4,12 @@ test1.c: tests simple index insertion and scans.
 #include <stdio.h>
 #include "am.h"
 #include "testam.h"
+#include "../pflayer/pf.h"
 
 #define MAXRECS	50
 #define MAX_FNAME_LENGTH 80	/* max length for file name */
 
-main()
+int main()
 {
 int id0,id1; /* index descriptor */
 char ch;
@@ -56,7 +57,7 @@ int numrec;		/* # of records retrieved*/
 	/* insert into index on integer */
 	printf("inserting into index of integer\n");
 	for (recnum=0; recnum < MAXRECS; recnum++){
-		xAM_InsertEntry(id1,INT_TYPE,sizeof(int),&recnum,IntToRecId(recnum));
+		xAM_InsertEntry(id1,INT_TYPE,sizeof(int),(char*)&recnum,IntToRecId(recnum));
 	}
 
 	/* Let's see if the insert works */

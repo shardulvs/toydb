@@ -1,20 +1,22 @@
-# include <stdio.h>
+# include <strings.h>
+# include "../pflayer/pftypes.h"
 # include "am.h"
 # include "pf.h"
+# include <string.h>
 
 /* searches for a key in a binary tree - returns FOUND or NOTFOUND and
 returns the pagenumber and the offset where key is present or could 
 be inserted */
-AM_Search(fileDesc,attrType,attrLength,value,pageNum,pageBuf,indexPtr)
-int fileDesc;
-char attrType;
-int attrLength;
-char *value;
-int *pageNum; /* page number of page where key is present or can be inserted*/
-char **pageBuf; /* pointer to buffer in memory where leaf page corresponding                                                        to pageNum can be found */
-int *indexPtr; /* pointer to index in leaf where key is present or 
+int AM_Search(
+int fileDesc,
+char attrType,
+int attrLength,
+char *value,
+int *pageNum, /* page number of page where key is present or can be inserted*/
+char **pageBuf, /* pointer to buffer in memory where leaf page corresponding                                                        to pageNum can be found */
+int *indexPtr /* pointer to index in leaf where key is present or 
                                                             can be inserted */
-
+)
 {
 	int errVal;
 	int nextPage; /* next page to be followed on the path from root to leaf*/
@@ -86,13 +88,14 @@ int *indexPtr; /* pointer to index in leaf where key is present or
 
 
 /* Finds the place (index) from where the next page to be followed is got*/
-AM_BinSearch(pageBuf,attrType,attrLength,value,indexPtr,header)
-char *pageBuf; /* buffer where the page is found */
-char attrType; 
-int attrLength;
-char *value; /* attribute value for which search is called */
-int *indexPtr;  
-AM_INTHEADER *header;
+int AM_BinSearch(
+char *pageBuf, /* buffer where the page is found */
+char attrType, 
+int attrLength,
+char *value, /* attribute value for which search is called */
+int *indexPtr,  
+AM_INTHEADER *header
+)
 
 {
 	int low,high,mid; /* for binary search */
@@ -111,7 +114,7 @@ AM_INTHEADER *header;
 
 		/* compare the value with the middle key */
 		compareVal = AM_Compare(pageBuf + AM_sint + AM_si + 
-		(mid - 1)*recSize,attrType,attrLength,value); 
+		(mid - 1)*recSize,attrType,value,attrLength); 
 		
 		if (compareVal < 0) 
 			high = mid - 1 ;
@@ -130,8 +133,7 @@ AM_INTHEADER *header;
 	
 	/* check the border cases */
 	if ((high - low) == 0)
-		if(AM_Compare(pageBuf+AM_sint+AM_si +(low - 1)*recSize,attrType,
-		attrLength, value) < 0)
+		if(AM_Compare(pageBuf+AM_sint+AM_si +(low - 1)*recSize,attrType, value,attrLength) < 0)
 		{
 			bcopy(pageBuf+AM_sint+(low-1)*recSize,(char *)&pageNum,
 			      AM_si);
@@ -148,7 +150,7 @@ AM_INTHEADER *header;
 
 	if ((high - low) == 1)
 		if(AM_Compare(pageBuf+AM_sint+AM_si +(low - 1)*recSize,attrType,
-		attrLength, value) < 0)
+		value,attrLength) < 0)
 		{
 			bcopy(pageBuf+AM_sint+(low-1)*recSize,(char *)&pageNum,
 		              AM_si);
@@ -157,7 +159,7 @@ AM_INTHEADER *header;
 		}
 		else
 			if(AM_Compare(pageBuf+AM_sint+AM_si +low*recSize,
-			attrType,attrLength, value) < 0)
+			attrType, value,attrLength) < 0)
 			{
 				bcopy(pageBuf+AM_sint+low*recSize,
 				      (char *)&pageNum,AM_si);
@@ -178,13 +180,14 @@ AM_INTHEADER *header;
 
 /* search a leaf node for the key- returns the place where it is found or can
 be inserted */
-AM_SearchLeaf(pageBuf,attrType,attrLength,value,indexPtr,header)
-char *pageBuf; /* buffer where the leaf page resides */
-char attrType;
-int attrLength;
-char *value; /* attribute value to be compared with */
-int *indexPtr;/* pointer to the index where key is found or can be inserted */
-AM_LEAFHEADER *header;
+int AM_SearchLeaf(
+char *pageBuf, /* buffer where the leaf page resides */
+char attrType,
+int attrLength,
+char *value, /* attribute value to be compared with */
+int *indexPtr,/* pointer to the index where key is found or can be inserted */
+AM_LEAFHEADER *header
+)
 
 
 {
@@ -210,7 +213,7 @@ AM_LEAFHEADER *header;
 
 		/* compare value with the middle key */
 		compareVal = AM_Compare(pageBuf + AM_sl + (mid - 1)*recSize,
-		attrType,attrLength,value);
+		attrType,value,attrLength);
 
 		if (compareVal < 0) 
 			high = mid - 1 ;
@@ -226,7 +229,7 @@ AM_LEAFHEADER *header;
 	if ((high - low) == 0)
 	{ 
 		compareVal = AM_Compare(pageBuf+AM_sl+(low - 1)*recSize,
-		attrType ,attrLength, value);
+		attrType , value,attrLength);
 
 
 		if (compareVal < 0)
@@ -249,7 +252,7 @@ AM_LEAFHEADER *header;
 	if ((high - low) == 1)
 	{
 		compareVal = AM_Compare(pageBuf+AM_sl+(low - 1)*recSize,
-		attrType ,attrLength, value); 
+		attrType , value,attrLength); 
 
 		if (compareVal < 0)
 		{
@@ -264,7 +267,7 @@ AM_LEAFHEADER *header;
 		else
 		{ 
 			compareVal = AM_Compare(pageBuf+AM_sl+low*recSize,
-			attrType, attrLength, value);
+			attrType, value, attrLength);
 
 			if (compareVal < 0)
 			{
@@ -291,11 +294,12 @@ AM_LEAFHEADER *header;
 /* Compare value in bufPtr with value in valPtr - returns -1 ,0 or 1 according
 to whether value in valPtr is less than , equal to or greater than value 
 in BufPtr*/
-AM_Compare(bufPtr,attrType,attrLength,valPtr)
-char *bufPtr;
-char attrType;
-char *valPtr;
-int attrLength;
+int AM_Compare(
+char *bufPtr,
+char attrType,
+char *valPtr,
+int attrLength
+)
 
 {
 	int bufint,valint;/* temporary aligned storage for comparison */

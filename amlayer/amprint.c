@@ -1,8 +1,11 @@
 # include <stdio.h>
 # include "am.h"
 # include "pf.h"
+# include <strings.h>
+# include <stdlib.h>
+# include "../pflayer/pftypes.h"
 
-AM_PrintIntNode(pageBuf,attrType)
+int AM_PrintIntNode(pageBuf,attrType)
 char *pageBuf;
 char attrType;
 {
@@ -31,9 +34,10 @@ for(i = 1 ; i <= (header->numKeys);i++)
 }
 
 
-AM_PrintLeafNode(pageBuf,attrType)
-char *pageBuf;
-char attrType;
+int AM_PrintLeafNode(
+char *pageBuf,
+char attrType
+)
 
 {
 short nextRec;
@@ -71,11 +75,12 @@ for (i = 1; i <= header->numKeys; i++)
   }
 }
 
-AM_DumpLeafPages(fileDesc,min,attrType,attrLength)
-int fileDesc;
-int min;
-int attrLength;
-char attrType;
+int AM_DumpLeafPages(
+int fileDesc,
+int min,
+int attrLength,
+char attrType
+)
 
 
 {
@@ -112,9 +117,10 @@ AM_Check;
 
 
 
-AM_PrintLeafKeys(pageBuf,attrType)
-char *pageBuf;
-char attrType;
+void AM_PrintLeafKeys(
+char *pageBuf,
+char attrType
+)
 
 {
 short nextRec;
@@ -142,10 +148,11 @@ for (i = 1; i <= header->numKeys; i++)
 }
 
 
-AM_PrintAttr(bufPtr,attrType,attrLength)
-char *bufPtr;
-char attrType;
-int attrLength;
+void AM_PrintAttr(
+char *bufPtr,
+char attrType,
+int attrLength
+)
 
 {
 int bufint;
@@ -161,7 +168,7 @@ switch(attrType)
               }
    case 'f' : {
                bcopy(bufPtr,(char *)&buffloat,AM_sf);
-               printf("ATTRIBUTE is %d\n",buffloat);
+               printf("ATTRIBUTE is %f\n",buffloat);
                break;
               }
    case 'c' : {
@@ -176,10 +183,11 @@ switch(attrType)
 }
 
 
-AM_PrintTree(fileDesc,pageNum,attrType)
-int pageNum;
-int fileDesc;
-char attrType;
+void AM_PrintTree(
+int pageNum,
+int fileDesc,
+char attrType
+)
 
 {
 int nextPage;

@@ -1,13 +1,15 @@
 /* test3.c: tests deletion and scan. */
+#include <stdlib.h>
 #include <stdio.h>
 #include "am.h"
 #include "pf.h"
 #include "testam.h"
+#include "../pflayer/pftypes.h"
 
 #define MAXRECS	10000	/* max # of records to insert */
 #define FNAME_LENGTH 80	/* file name size */
 
-main()
+int main()
 {
 int fd;	/* file descriptor for the index */
 char fname[FNAME_LENGTH];	/* file name */

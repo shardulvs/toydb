@@ -43,4 +43,50 @@ typedef struct smallrec {
 /* successor function, assuming ch is a character */
 #define succ(ch) ((char)((int)(ch)+1))
 
-extern RecIdType xAM_FindNextEntry();
+// to confuse your enemy you must confuse yourself first - sun tzu probably
+// extern RecIdType xAM_FindNextEntry();
+RecIdType xAM_FindNextEntry(int sd);
+int xAM_CreateIndex(
+char *fname,
+int indexno,
+char attrtype,
+int attrlen
+);
+int xPF_OpenFile(
+char *fname
+);
+int xAM_InsertEntry(
+int fd,
+char attrtype,
+int attrlen,
+char *val,
+RecIdType recid
+);
+int xAM_OpenIndexScan(
+int fd,
+char attrtype,
+int  op,
+int attrlen,
+char *val
+);
+int xAM_CloseIndexScan(
+int sd
+);
+int xPF_CloseFile(
+int fd
+);
+int xAM_DestroyIndex(
+char *fname,
+int indexno
+);
+void padstring(
+char *str,
+int length
+);
+int xAM_DeleteEntry(
+int fd,
+char attrtype,
+int attrlen,
+char *val,
+RecIdType recid
+);

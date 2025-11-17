@@ -1,7 +1,8 @@
-
+# include "../pflayer/pftypes.h"
 # include <stdio.h>
 # include "am.h"
 # include "pf.h"
+# include <strings.h>
 
 /* The structure of the scan Table */
 struct {
@@ -22,13 +23,14 @@ struct {
 
 
 /* Opens an index scan */
-AM_OpenIndexScan(fileDesc,attrType,attrLength,op,value)
-int fileDesc; /* file Descriptor */
+int AM_OpenIndexScan(
+int fileDesc, /* file Descriptor */
 
-char attrType; /* 'i' or 'c' or 'f' */
-int attrLength; /* 4 for 'i' or 'f' , 1-255 for 'c' */
-int op; /* operator for comparison */
-char *value; /* value for comparison */
+char attrType, /* 'i' or 'c' or 'f' */
+int attrLength, /* 4 for 'i' or 'f' , 1-255 for 'c' */
+int op, /* operator for comparison */
+char *value /* value for comparison */
+)
 
 {
 int scanDesc; /* index into scan table */
@@ -121,7 +123,7 @@ if (index > header->numKeys)
   pageNum = header->nextLeafPage;
   index = 1;
   }
-  else 
+  else
    pageNum = AM_NULL_PAGE;
 
 AM_scanTable[scanDesc].pageNum = pageNum;
@@ -277,8 +279,9 @@ return(scanDesc);
 
 /* returns the record id of the next record that satisfies the conditions
 specified for index scan associated with scanDesc */
-AM_FindNextEntry(scanDesc)
-int scanDesc;/* index scan descriptor */
+int AM_FindNextEntry(
+int scanDesc/* index scan descriptor */
+)
 
 {
 int recId; /* recordId to be returned */
@@ -388,7 +391,7 @@ if (AM_scanTable[scanDesc].status != FIRST)
  {
   compareVal = AM_Compare(pageBuf + (AM_scanTable[scanDesc].nextIndex - 1)
                 *recSize + AM_sl,AM_scanTable[scanDesc].attrType,
-		header->attrLength,AM_scanTable[scanDesc].nextvalue);
+		AM_scanTable[scanDesc].nextvalue,header->attrLength);
   if (compareVal != 0)
    {
     /* prev record deleted */
@@ -470,8 +473,9 @@ return(recId);
 
 
 /* terminates an index scan */
-AM_CloseIndexScan(scanDesc)
-int scanDesc;/* scan Descriptor*/
+int AM_CloseIndexScan(
+int scanDesc/* scan Descriptor*/
+)
 
 {
 if ((scanDesc < 0) || (scanDesc > MAXSCANS - 1))
@@ -484,8 +488,9 @@ return(AME_OK);
 }
 
 
-GetLeftPageNum(fileDesc)
-int fileDesc;
+int GetLeftPageNum(
+int fileDesc
+)
 
 {
 char *pageBuf;
