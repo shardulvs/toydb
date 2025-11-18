@@ -1,3 +1,4 @@
+#include "../pflayer/pftypes.h"
 typedef struct am_leafheader
 	{
 		char pageType;
@@ -233,4 +234,7 @@ int scanDesc/* index scan descriptor */
 int AM_DestroyIndex(
 char *fileName,/* name of indexed file */
 int indexNo /* number of this index for file */
+);
+void AM_PrintError(
+char *s
 );

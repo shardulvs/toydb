@@ -1,0 +1,2 @@
+method,records,time_sec,logicalReq,physReads,physWrites
+bulk_load_sorted,17814,0.0683,35632,0,17822
